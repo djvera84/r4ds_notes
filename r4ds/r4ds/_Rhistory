@@ -1,0 +1,512 @@
+geom_freqpoly(aes(color = cut))
+?geom_jitter
+?ggbeeswarm
+ggplot(data = mpg) +
+geom_quasirandom(mapping = aes(x = reorder(class, hwy, FUN = median),
+y = hwy))
+ggplot(data = mpg) +
+geom_beeswarm(mapping = aes(x = reorder(class, hwy, FUN = median),
+y = hwy))
+?geom_beeswarm
+ggplot(data = mpg) +
+geom_point(mapping = aes(x = reorder(class, hwy, FUN = median),
+y = hwy))
+diamonds %>%
+count(color, cut) %>%
+ggplot(mapping = aes(x = color, y = cut)) +
+geom_tile(mapping = aes(fill = n))
+source('~/Google Drive/R Stuff/r4ds/r4ds_ch5_exercises.R', echo=TRUE)
+diamonds %>%
+count(color, cut)
+163+662+1513+1603+2834
+diamonds %>%
+count(color, cut) %>%
+count(color)
+diamonds %>%
+count(color, cut) %>%
+count(color, wt = n)
+163/6775
+diamonds %>%
+count(color, cut) %>%
+mutate(prop = n/sum(n))
+diamonds %>%
+count(color, cut) %>%
+mutate(prop = n/sum(n)) %>%
+ggplot(color, cut) +
+geom_tile(aes(fill = prop))
+diamonds %>%
+count(color, cut) %>%
+mutate(prop = n/sum(n)) %>%
+ggplot(aes(color, cut)) +
+geom_tile(aes(fill = prop))
+diamonds %>%
+count(cut, color) %>%
+mutate(prop = n/sum(n)) %>%
+ggplot(aes(color, cut)) +
+geom_tile(aes(fill = prop))
+diamonds %>%
+count(color, cut) %>%
+mutate(prop = n/sum(n))
+mutate(prop = n/sum(n))
+diamonds %>%
+count(cut, color) %>%
+mutate(prop = n/sum(n)) %>%
+ggplot(aes(color, cut)) +
+geom_tile(aes(fill = prop))
+diamonds %>%
+count(color, cut) %>%
+group_by(color) %>%
+mutate(prop = n/sum(n))
+diamonds %>%
+count(color, cut) %>%
+mutate(prop = n/sum(n))
+library(nycflights13)
+View(flights)
+flights %>%
+group_by(dest, month) %>%
+mutate(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+ggplot(aes(month, dest)) +
+geom_tile(aes(fill = avg_delay))
+flights %>%
+group_by(dest, month) %>%
+mutate(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+ggplot(aes(factor(month), dest)) +
+geom_tile(aes(fill = avg_delay))
+flights %>%
+group_by(dest, month) %>%
+mutate(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+ggplot(aes(factor(month), dest)) +
+geom_tile(aes(fill = avg_delay)) +
+labs(x = "Month", y = "Destination", fill = "Average Delay")
+flights %>%
+group_by(month, dest) %>%
+mutate(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+ggplot(mapping = aes(x = factor(month), y = dest)) +
+geom_tile(mapping = aes(fill = avg_delay)) +
+labs(x = "Month", y = "Destination", fill = "Average Delay")
+diamonds %>%
+count(color, cut) %>%
+ggplot(mapping = aes(x = color, y = cut)) +
+geom_tile(mapping = aes( fill = n))
+diamonds %>%
+count(color, cut) %>%
+ggplot(mapping = aes(x = cut, y = color)) +
+geom_tile(mapping = aes( fill = n))
+ggplot(diamonds, aes(carat, price)) +
+geom_boxplot()
+ggplot(diamonds, aes(cut_width(carat,0.1), price)) +
+geom_boxplot()
+ggplot(diamonds, aes(cut_width(carat,0.25), price)) +
+geom_boxplot()
+ggplot(diamonds, aes(cut_width(carat,0.25), price)) +
+geom_boxplot() +
+coord_flip()
+?aes
+ggplot(diamonds) +
+geom_boxplot(aes(group = cut_width(carat,0.25), price) +
+coord_flip()
+# 2. Visualise the distribution of carat, partitioned by price.
+# 3. How does the price distribution of very large diamonds compare to small
+# diamonds. Is it as you expect, or does it surprise you?
+# 4. Combine two of the techniques you’ve learned to visualise the combined
+# distribution of cut, carat, and price.
+# 5. Two dimensional plots reveal outliers that are not visible in one
+# dimensional plots. For example, some points in the plot below have an
+# unusual combination of x and y values, which makes the points outliers
+# even though their x and y values appear normal when examined separately.
+ggplot(data = diamonds) +
+geom_point(mapping = aes(x = x, y = y)) +
+coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+ggplot(diamonds) +
+geom_boxplot(aes(group = cut_number(carat, 10), price))
+ggplot(diamonds, aes(x = carat, y = price)) +
+geom_boxplot(aes(group = cut_width(carat, 0.3)))
+ggplot(diamonds, aes(x = carat, y = price)) +
+geom_boxplot(mapping = aes(group = cut_number(carat, 10)))
+ggplot(diamonds, aes(x = price)) +
+geom_freqpoly(aes(color = cut_width(carat, 0.3)))
+ggplot(diamonds, aes(x = price)) +
+geom_freqpoly(aes(color = cut_number(carat, 10)))
+getwd()
+ggplot(diamonds, aes(price, ..density..)) +
+geom_freqpoly(aes(color = cut_number(carat, 10)))
+ggplot(diamonds, aes(price, ..denisty..)) +
+geom_freqpoly(aes(color = cut_width(carat, 0.3)))
+ggplot(diamonds, aes(price, ..denisty..)) +
+geom_freqpoly(aes(color = cut_width(carat, 0.3)))
+ggplot(diamonds, aes(price, ..density..)) +
+geom_freqpoly(aes(color = cut_width(carat, 0.3)))
+ggplot(diamonds) +
+geom_boxplot(aes(cut_width(carat, 1000), price))
+ggplot(diamonds) +
+geom_boxplot(aes(cut_width(price, 1000), carat))
+ggplot(diamonds) +
+geom_boxplot(aes(cut_width(price, 1000), carat)) +
+coord_flip()
+ggplot(diamonds) +
+geom_lv(aes(cut_width(price, 1000), carat)) +
+coord_flip()
+ggplot(diamonds) +
+geom_lv(aes(cut_width(price, 1000), carat), color = gold) +
+coord_flip()
+ggplot(diamonds) +
+geom_lv(aes(cut_width(price, 1000), carat), color = "gold") +
+coord_flip()
+ggplot(diamonds) +
+geom_lv(aes(cut_width(price, 1000), carat), fill = "gold") +
+coord_flip()
+ggplot(data = diamonds) +
+geom_boxplot(mapping = aes(x = cut_number(price, 10), y = carat)) +
+coord_flip()
+ggplot(data = diamonds) +
+geom_lv(mapping = aes(x = cut_number(price, 10), y = carat)) +
+coord_flip()
+ggplot(data = diamonds) +
+geom_lv(mapping = aes(x = cut_number(price, 10), y = carat), fill = "gold") +
+coord_flip()
+ggplot(data = diamonds) +
+geom_lv(aes(cut_number(price, 10), carat), fill = "gold") +
+coord_flip()
+ggplot(data = diamonds) +
+geom_lv(aes(cut_number(carat, 5), price), fill = "gold") +
+# 4. Combine two of the techniques you’ve learned to visualise the combined
+# distribution of cut, carat, and price.
+# 5. Two dimensional plots reveal outliers that are not visible in one
+# dimensional plots. For example, some points in the plot below have an
+# unusual combination of x and y values, which makes the points outliers
+# even though their x and y values appear normal when examined separately.
+ggplot(data = diamonds) +
+geom_point(mapping = aes(x = x, y = y)) +
+coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+ggplot(data = diamonds) +
+geom_lv(aes(cut_number(carat, 5), price), fill = "gold")
+ggplot(data = diamonds) +
+geom_lv(aes(cut_number(carat, 6), price), fill = "gold")
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 1.5), price), fill = "gold")
+ggplot(data = diamonds) +
+geom_lv(aes(cut_number(carat, 10), price), fill = "gold")
+ggplot(data = diamonds) +
+geom_lv(aes(cut_number(carat, 10), price), fill = "gold") +
+coord_flip()
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+coord_flip() +
+xlab("Carat") + ylab("Price")
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+facet_wrap(~ carat)
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+facet_wrap(~ cut)
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+coord_flip() +
+xlab("Carat") + ylab("Price")
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+facet_wrap(~ cut)
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+facet_grid(cut ~ price)
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+facet_grid(cut ~ price)
+ggplot(data = diamonds) +
+geom_lv(aes(cut_width(carat, 0.5), price), fill = "gold") +
+facet_wrap(~ cut, ncol = 1)
+ggplot(data = diamonds,  mapping = aes(x = carat, y = price)) +
+geom_hex() +
+facet_wrap(~ cut, ncol = 1)
+ggplot(data = diamonds,
+mapping = aes(x = cut_number(carat, 5), y = price)) +
+geom_boxplot(mapping = aes(color = cut))
+ggplot(data = diamonds,
+mapping = aes(x = cut_number(carat, 5), y = price)) +
+geom_lv(mapping = aes(color = cut, fill = cut))
+ggplot(data = diamonds,
+mapping = aes(x = cut_number(carat, 5), y = price)) +
+geom_boxplot(mapping = aes(color = cut))
+ggplot(data = diamonds,
+mapping = aes(x = cut_number(carat, 5), y = price)) +
+geom_boxplot(mapping = aes(color = cut))
+ggplot(data = diamonds,
+mapping = aes(x = cut_number(carat, 5), y = price)) +
+geom_boxplot(mapping = aes(fill = cut))
+ggplot(data = diamonds,
+mapping = aes(x = cut_number(carat, 5), y = price)) +
+geom_boxplot(mapping = aes(fill = cut))
+ggplot(data = diamonds,
+aes(color = cut_number(carat, 5),
+fill = cut_number(carat, 5),
+x = cut,
+y = price)) +
+geom_boxplot()
+ggplot(data = diamonds,
+aes(color = cut_number(carat, 5),
+x = cut,
+y = price)) +
+geom_boxplot()
+ggplot(data = diamonds,
+aes(color = cut_number(carat, 5),
+fill = cut_number(carat, 5),
+x = cut,
+y = price)) +
+geom_lv()
+ggplot(data = diamonds,
+aes(fill = cut_number(carat, 5),
+x = cut,
+y = price)) +
+geom_lv()
+ggplot(data = diamonds) +
+geom_point(mapping = aes(x = x, y = y)) +
+coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+ggplot(data = diamonds,
+aes(fill = cut_number(carat, 5),
+x = cut,
+y = price)) +
+geom_lv()
+source('~/Google Drive/R Stuff/r4ds/r4ds_ch5_exercises.R', echo=TRUE)
+vignette(tibble)
+vignette("tibble")
+source('~/Google Drive/R Stuff/r4ds/r4ds_ch5_exercises.R')
+library(tidyverse)
+as_tibble(iris)
+tibble(
+x = 1:5,
+y = 1,
+z = x ^ 2 + y
+)
+tb <- tibble(
+':)' = "smile",
+' ' = "space",
+'2000' = number
+)
+tb <- tibble(
+':)' = "smile",
+' ' = "space",
+'2000' = "number"
+)
+tb
+tribble(
+~x, ~y, ~z,
+#--|---|----
+"a", 2, 3.6,
+"b", 1, 8.5
+)
+tibble(
+a = lubridate:: now() + runif(1e3) * 86400,
+b = lubridate:: today() + runif(1e3) * 30,
+c = 1: 1e3,
+d = runif(1e3),
+e = sample(letters, 1e3, replace = TRUE)
+)
+nycflights13::flights %>%
+print(n = 10, width = Inf)
+View(nycflights13::flights)
+package?tibble
+?rnorm
+df <- tibble(
+x = runif(5),
+y = rnorm(5)
+)
+df
+df$x
+df[['x']]
+df[["x"]]
+df[[1]]
+df %>% .x
+df %>% .$x
+df$y
+df%z
+df[[3]]
+class(tb)
+class(as.data.frame(tb))
+mtcars
+class(mtcars)
+class(as_tibble(mtcars))
+as_tible(mtcars)
+as_tibble(mtcars)
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df
+df[, "xyz"]
+df[, c("abc", "xyz")]
+df
+tb <- tibble('abc' = 1, 'xyz' = "a")
+tb
+tb$x
+tb$xyz
+class(df$xyz)
+class(tb$xyz)
+tb[, "xyz"]
+tb[, c("abc", "xyz")]
+df[, c("abc", "xyz")]
+df[, c("abc", "xyz")]
+class(df[, c("abc", "xyz")])
+class(df[, "xyz"])
+mt_cars_tb <- as_tibble(mt_cars)
+mtcars_tb <- as_tibble(mtcars)
+var <- "mpg"
+mtcars$mpg
+mtcars_tb$mpg
+mtcars_tb$mpg
+mtcars_tb$var
+var <- "mpg"
+mtcars_tb$var
+var
+mtcars_tb[[var]]
+tb[["xyz"]]
+tb[[xyz]]
+tb[["x"]]
+annoying <- tibble(
+`1` = 1:10,
+`2` = `1` * 2 + rnorm(length(`1`))
+)
+annoying
+annoying$`1`
+ggplot(annoying, aes('1', '2')) +
+geom_point()
+ggplot(annoying, aes(annoying$`1`, annoying$`2`)) +
+geom_point()
+annoying %>%
+mutate('3' = '2'/'1')
+ggplot(annoying, aes(`1`, `2`)) +
+geom_point()
+annoying %>%
+mutate(`3` = annoying$`2`/annoying$`1`)
+annoying %>%
+mutate(`3` = `2`/`1`)
+colnames <- (annoying, c("one", "two", "three"))
+colnames <- (annoying, c("one", "two", "three"))
+colnames(annoying) <- c("one", "two", "three")
+rename(annoying, one = `1`, two = `2`, three = `3`)
+annoying <- rename(one = `1`, two = `2`, three = `3`)
+annoying <- rename(annoying, one = `1`, two = `2`, three = `3`)
+annoying <- rename(annoying, one = `1`, two = `2`, three = `3`)
+annoying %>%
+mutate(`3` = `2`/`1`)
+annoying
+annoying$`3` <- annoying$`2`/annoying$`1`
+annoying
+annoying <- rename(annoying, one = `1`, two = `2`, three = `3`)
+annoying
+?tibble::enframe
+enframe(1:3)
+enframe(c(a = 5, b = 7))
+enframe(c(a = 5, b = 7, c = 3))
+?print
+package?tibble
+package?tibble
+package?ggbeeswarm
+source('~/Google Drive/R Stuff/r4ds/r4ds_chapter7.R')
+heights <- read_csv(" data/ heights.csv")
+heights <- read_csv("https://github.com/hadley/r4ds/blob/master/data/heights.csv")
+View(heights)
+heights <- read_csv("https://raw.githubusercontent.com/hadley/r4ds/master/data/heights.csv")
+source('~/Google Drive/R Stuff/r4ds/r4ds_ch8.R')
+View(heights)
+read_csv(" a, b, c 1,2,3 4,5,6")
+read_csv("a, b, c 1,2,3 4,5,6")
+read_csv("a, b, c
+1, 2, 3
+4, 5, 6")
+read_csv("The first line of metadata
+The second line of metadata
+x, y, z
+1,2,3", skip = 2)
+read_csv("The first line of metadata
+The second line of metadata
+x, y, z
+1,2,3")
+, skip = 2
+read_csv("The first line of metadata
+The second line of metadata
+x, y, z
+1,2,3", skip = 2)
+read_csv("# A comment I want to skip
+x, y, z
+1,2,3", comment = "#")
+read_csv("# A comment I want to skip
+x, y, z , 1,2,3", comment = "#")
+read_csv("# A comment I want to skip
+x, y, z,
+1, 2, 3", comment = "#")
+read_csv("# A comment I want to skip
+x, y, z
+1, 2, 3", comment = "#")
+read_csv("1,2,3\ n4,5,6", col_names = FALSE)
+read_csv("1,2,3\n4,5,6", col_names = FALSE)
+read_csv("1,2,3\n4,5,6", col_names = c("x", "y", "z"))
+read_csv("a, b, c\n1,2,.", na = ".")
+?read_delim
+?read_csv
+?read_fwf
+read_delim("x,y\n1,'a,b'", delim = "\n")
+?read_delim
+read_delim("x,y\n1,'a,b'", delim = ",", quote = "'")
+read_csv("a,b\n1,2,3\n4,5,6")
+read_csv("a,b,\n1,2,3\n4,5,6")
+read_csv("a,b, c\n1,2,3\n4,5,6")
+read_csv("a,b,c\n1,2\n1,2,3,4")
+read_csv("a,b,c\n1,2\n1,2,3,4")
+read_csv("a,b,c,\n1,2\n1,2,3,4")
+read_csv("a,b,c,d\n1,2\n1,2,3,4")
+read_csv("a,b\n\"1")
+read_csv("a,b\n\1")
+read_csv("a,b\n1")
+read_csv("a,b\n1,2\na,b")
+read_csv("a;b\n1;3")
+read_delim("a;b\n1;3", delim = ";")
+read_delim("a;b\n1;3", ";")
+read_csv2("a;b\n1;3")
+x <- c("1","2,"3"")
+x <- c("1","2,"3")
+x <- c("1","2","3")
+x
+class(x)
+x <- c(1, 2, 3)
+class(x)
+c
+x
+parse_integer(x)
+x <- c("1","2","3")
+x
+class(x)
+parse_integer(x)
+class(parse_character(x))
+charToRaw("Hadley")
+charToRow("Daniel")
+charToRaw("Daniel")
+x1 <- "El Ni\ xf1o was particularly bad this year"
+x2 <- "\ x82\ xb1\ x82\ xf1\ x82\ xc9\ x82\ xbf\ x82\ xcd"
+parse_character(x1, locale = locale( encoding = "Latin1"))
+x1 <- "El Ni\xf1o was particularly bad this year"
+x1 <- "El Ni\xflo was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\ xcd"
+parse_character(x1, locale = locale( encoding = "Latin1"))
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\ xcd"
+parse_character(x1, locale = locale( encoding = "Latin1"))
+parse_character( x1, locale = locale( encoding = "Latin1"))
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+parse_character(x1, locale = locale( encoding = "Latin1"))
+parse_character( x1, locale = locale( encoding = "Latin1"))
+parse_character( x1, locale = locale( encoding = "Shift-JIS"))
+parse_character( x1, locale = locale( encoding = "Shift-JIS"))
+parse_character( x1, locale = locale(encoding = "Shift-JIS"))
+parse_character(x1, locale = locale(encoding = "Shift-JIS"))
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+parse_character(x1, locale = locale(encoding = "Latin1"))
+parse_character(x1, locale = locale(encoding = "Shift-JIS"))
+parse_character(x1, locale = locale(encoding = "Shift-JIS"))
+parse_character()
+parse_character()
+?parse_character()
+parse_character(x1, locale = locale(encoding = "Shift-JIS"))
+guess_encoding(charToRaw(x1))
+guess_encoding(charToRaw(x2))
+parse_datetime("2010-10-01T2010")
+parse_datetime(" 20101010")
+parse_datetime("20101010")
