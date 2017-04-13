@@ -46,7 +46,8 @@ table2
 table3
 # Table 3 is almost as table1 however the variables cases and population have
 # been munged into a new varialbe "rate" in column 3 that is now a string;
-# we note that we would have to parse the string to recover the cases and
+# we note that we would have to parse (actually tidyr has a function that can
+# handle this called separate, see below) the string to recover the cases and
 # population. A better way would be to use dplyr::mutate to create rate from
 # table1
 
@@ -240,3 +241,89 @@ preg <- tribble(
 preg %>%
   gather(male, female, key = "sex", value = "count")
 
+# tidyr::seperate===========================================================
+table3
+table3 %>%
+  separate(rate, into = c("cases", "population"))
+# OR
+table3 %>%
+  separate(rate, into = c("cases", "population"), sep = "/")
+# not column types in above, to fix we can convert:
+table3 %>%
+  separate(
+    rate,
+    into = c("cases", "population"), 
+    convert = TRUE
+  )
+    
+table3 %>%
+  separate(year, into = c("century", "year"), sep = 2)
+# tidyr::unite==============================================================
+table5
+table5 %>%
+  unite(new, century, year)
+
+table5 %>%
+  unite(new, century, year, sep = "")
+# Exercises 12.2.3 on website:
+# http://r4ds.had.co.nz/tidy-data.html#exercises-23
+
+# 1. What do the extra and fill arguments do in separate()? Experiment with 
+# the various options for the following two toy datasets.
+
+# extra: 
+# If sep is a character vector, this controls what happens when 
+# there are too many pieces. There are three valid options:
+# "warn" (the default): emit a warning and drop extra values.
+# "drop": drop any extra values without a warning.
+# "merge": only splits at most length(into) times
+
+# fill:	
+# If sep is a character vector, this controls what happens when 
+# there are not enough pieces. There are three valid options:
+# "warn" (the default): emit a warning and fill from the right
+# "right": fill with missing values on the right
+# "left": fill with missing values on the left
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"))
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "warn")
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "drop")
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "merge")
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"))
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "warn")
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "right")
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "left")
+
+# 2. Both unite() and separate() have a remove argument. What does it do? 
+# Why would you set it to FALSE?
+
+# ?unite
+# If TRUE removes input columns from output data frame, you would want it
+# FALSE if you wanted to see orignal variable from original column.
+
+
+# Compare and contrast separate() and extract(). Why are there three 
+# variations of separation (by position, by separator, and with groups), 
+# but only one unite?
+
+# ?extract
+# extract uses regular expression with 'capturing groups' and turns each
+# group into a new column. from jrnold's github:
+# In unite it is unambigous since it is many columns to one, and once the 
+# columns are specified, there is only one way to do it, the only choice is 
+# the sep. In separate, it is one to many, and there are multiple ways to 
+# split the character string.
