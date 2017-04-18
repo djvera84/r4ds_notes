@@ -327,3 +327,195 @@ tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
 # columns are specified, there is only one way to do it, the only choice is 
 # the sep. In separate, it is one to many, and there are multiple ways to 
 # split the character string.
+
+# Missing Values============================================================
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+
+stocks %>%
+  spread(year, return) %>%
+  gather(year, return, `2015`:`2016`, na.rm = TRUE)
+
+stocks %>% 
+  complete(year, qtr)
+
+treatment <- tribble(
+  ~ person,           ~ treatment, ~ response,
+  "Derrick Whitmore", 1,           7,
+  NA,                 2,           10,
+  NA,                 3,           9,
+  "Katherine Burke",  1,           4
+)
+
+treatment %>%
+  fill(person)
+
+# Exercises 12.3.3 on website:
+# http://r4ds.had.co.nz/tidy-data.html#exercises-24
+
+# 1. Compare and contrast the fill arguments to spread() and complete().
+# The fill argument in spread, if set, replaces missing values with the value
+# specified in the fill argument, default is NA.
+# The fill argument in complete also gives the value to be replaced however
+# it is specified by a list that gives a single value for each variable 
+# intead of NA.
+df <- data_frame(
+  group = c(1:2, 1),
+  item_id = c(1:2, 2),
+  item_name = c("a", "b", "b"),
+  value1 = 1:3,
+  value2 = 4:6)
+
+df %>% 
+  complete(group, nesting(item_id, item_name))
+
+# You can also choose to fill in missing values
+df %>% 
+  complete(group, nesting(item_id, item_name), fill = list(value1 = 0))
+
+# 2. What does the direction argument to fill() do?
+# direction tells the function to fill either down the entries or up the
+# entries. Default is down.
+
+# Case Study ===============================================================
+tidyr::who
+View(who)
+
+who1 <- who %>%
+  gather(
+    new_sp_m014:newrel_f65, key = "key",
+    value = "cases",
+    na.rm = TRUE
+  )
+
+View(who1)
+
+who1 %>%
+  count(key)
+
+who2 <- who1 %>%
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+
+who3 <- who2 %>%
+  separate(key, c("new", "type", "sexage"), sep = "_")
+
+who3 %>% 
+  count(new)
+
+who4 <- who3 %>%
+  select(-new, -iso2, -iso3)
+
+who5 <- who4 %>%
+  separate(sexage, c("sex", "age"), sep = 1)
+
+# complete pipe:
+tidy_who <- who %>%
+  gather(code, cases, new_sp_m014:newrel_f65, na.rm = TRUE) %>%
+  mutate(
+    code = stringr::str_replace(code, "newrel", "new_rel")
+  ) %>%
+  separate(code, c("new", "var", "sexage")) %>%
+  select(-new, -iso2, -iso3) %>%
+  separate(sexage, c("sex", "age"), sep = 1)
+View(tidy_who)
+
+# Exercises 12.3.3 on website:
+# http://r4ds.had.co.nz/tidy-data.html#exercises-25
+
+# 1. In this case study I set na.rm = TRUE just to make it easier to check 
+# that we had the correct values. Is this reasonable? Think about how 
+# missing values are represented in this dataset. 
+# Are there implicit missing values? Whatâs the difference between an NA 
+# and zero?
+
+# 0 means there are no cases as opposed to missing data. From jrnold's
+# solutions, jrnold checked as follows
+gather(who, new_sp_m014:newrel_f65, key = "key", value = "cases") %>%
+  group_by(country, year)  %>%
+  mutate(missing = is.na(cases)) %>%
+  select(country, year, missing) %>%
+  distinct() %>%
+  group_by(country, year) %>%
+  filter(n() > 1)
+
+# 2. What happens if you neglect the mutate() step? 
+# (mutate(key = stringr::str_replace(key, "newrel", "new_rel")))
+who_bad_key <- who %>%
+  gather(code, cases, new_sp_m014:newrel_f65, na.rm = TRUE) %>%
+  separate(code, c("new", "var", "sexage")) %>%
+  select(-new, -iso2, -iso3) %>%
+  separate(sexage, c("sex", "age"), sep = 1)
+
+# we cannot deterime values associated with the newrel observations, 
+# several sex and age values are missing.
+
+# 3. I claimed that iso2 and iso3 were redundant with country. Confirm 
+# this claim.
+
+who %>%
+  count(country, iso2, iso3)
+
+# or
+
+who3 %>%
+  select(country, iso2, iso3) %>%
+  distinct() %>%
+  group_by(country) %>%
+  filter(n() > 1)
+
+# 4. For each country, year, and sex compute the total number of cases of 
+# TB. Make an informative visualisation of the data.
+
+tidy_who %>%
+  group_by(country, year, sex) %>%
+  count(wt = cases) %>%
+  ggplot(aes(year, n)) +
+  geom_line(aes(group = country, color = sex))
+
+# since above doesnt have a lot of data points prior to 1995, we filter:
+tidy_who %>%
+  group_by(country, year, sex) %>%
+  filter(year > 1995) %>%
+  count(wt = cases) %>%
+  ggplot(aes(year, n)) +
+  geom_line(aes(group = country, color = sex))
+
+# we can also facet by male and female but is hard to seperate countries:
+tidy_who %>%
+  group_by(country, year, sex) %>%
+  filter(year > 1995) %>%
+  count(wt = cases) %>%
+  ggplot(aes(year, n)) +
+  geom_line(aes(group = country)) +
+  facet_wrap(~ sex, nrow = 2)
+
+# we can focus on countries with a large number of cases:
+tidy_who %>%
+  group_by(country) %>%
+  summarize(cases_per_country = sum(cases)) %>%
+  arrange(desc(cases_per_country))
+# above shows that the top 10 countries have over 905,000 cases so
+# we filter to focus on these:
+tidy_who %>%
+  group_by(country) %>%
+  mutate(cases_per_country = sum(cases)) %>%
+  group_by(country, year, sex) %>%
+  filter(cases_per_country > 905000, year > 1995 ) %>%
+  count(wt = cases) %>%
+  ggplot(aes(year, n)) +
+  geom_line(aes(color = country)) +
+  facet_wrap(~ sex, nrow = 2)
+  
+# easier to read if we only have top 5 countries:
+tidy_who %>%
+  group_by(country) %>%
+  mutate(cases_per_country = sum(cases)) %>%
+  group_by(country, year, sex) %>%
+  filter(cases_per_country > 1000000, year > 1995 ) %>%
+  count(wt = cases) %>%
+  ggplot(aes(year, n)) +
+  geom_line(aes(color = country)) +
+  facet_wrap(~ sex, nrow = 2)
