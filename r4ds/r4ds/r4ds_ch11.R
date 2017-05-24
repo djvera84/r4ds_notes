@@ -463,4 +463,62 @@ words_df %>%
   arrange(desc(prop_vowels))
 
 # a has the highest proportion of vowels (100%) followed by area at 75%
- 
+
+# Extract Matches
+stringr::sentences
+length(sentences)
+head(sentences)
+
+# Imagine we want all sentences that contain a color.
+
+colors <- c(
+  "red", "orange", "yellow", "green", "blue", "purple"
+)
+color_match <- str_c(colors, collapse = "|")
+
+has_color <- str_subset(sentences, color_match)
+matches <- str_extract(has_color, color_match)
+matches
+more <- sentences[str_count(sentences, color_match) > 1]
+str_extract(more, color_match)
+str_extract_all(more, color_match) # returns list
+str_extract_all(more, color_match, simplify = TRUE) # returns matrix
+x <- c("a", "a b", "a b c")
+str_extract_all(x, "[a-z]", simplify = TRUE)
+
+# Exercises 14.4.3.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-37
+
+# 1. In the previous example, you might have noticed that the regular 
+# expression matched “flickered”, which is not a colour. 
+# Modify the regex to fix the problem.
+
+# First method:
+color_fix <- c(
+  "\\sred\\s", "orange", "yellow", "green", "blue", "purple"
+)
+color_match_fix <- str_c(color_fix, collapse = "|")
+str_view_all(more, color_match_fix)
+
+# this works but keeps spaces around "red". It also misses the last "red" in
+# third sentence. jrnold's solution is betterusing the word boundary 
+# regex \b:
+color_fix2 <- str_c("\\b", str_c(colors, collapse = "|"), "\\b")
+str_view_all(more, color_fix2)
+
+
+# 2. From the Harvard sentences data, extract:
+#     a. The first word from each sentence.
+str_extract(sentences, "[a-zA-Z]+") %>% head()
+#     b. All words ending in ing.
+pattern <- "\\b[a-zA-Z]+ing\\b"
+sentences_ing <- str_subset(sentences, pattern)
+str_extract_all(sentences_ing, pattern)
+#     c. All plurals.
+pattern2 <- "\\b[a-zA-Z]{3,}s\\b"
+# From jrnold's notes to do this correctly requires linguistic information. 
+# jrnold defines word ending in an “s” and with 3 or more characters as 
+# plural; this elimantes words like "is" and "gas" but not words like "his"
+# or "hostess".
+sentences_s <- str_subset(sentences, pattern2)
+str_extract_all(sentences_s, pattern2)
