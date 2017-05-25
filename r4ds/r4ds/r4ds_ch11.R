@@ -1,4 +1,4 @@
-# R for Data Science Chapter 10
+# R for Data Science Chapter 11
 # Strings with stringr
 # Daniel J. Vera, Ph.D.
 library(tidyverse)
@@ -522,3 +522,70 @@ pattern2 <- "\\b[a-zA-Z]{3,}s\\b"
 # or "hostess".
 sentences_s <- str_subset(sentences, pattern2)
 str_extract_all(sentences_s, pattern2)
+
+# Grouped Matches
+
+# Imagine we want to extract nouns from sentences.
+# Heuristic: look for any word that comes after "a" or "the".
+noun <- "(a|the) ([^ ]+)"
+
+has_noun <- sentences %>%
+  str_subset(noun) %>%
+  head(10)
+has_noun %>%
+  str_extract(noun)
+
+has_noun %>%
+  str_match(noun)
+
+tibble(sentence = sentences) %>%
+  tidyr::extract(
+    sentence, c("article", "noun"), "(a|the) ([^ ]+)",
+    remove = FALSE
+  )
+
+# Exercises 14.4.4.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-38
+
+# 1. Find all words that come after a “number” like “one”, “two”, “three” 
+# etc. Pull out both the number and the word.
+after_number <- "(one|two|three|four|five|six|seven|eight|nine|ten) ([^ ]+)"
+
+sentences[str_detect(sentences, after_number)] %>%
+  str_extract(after_number)
+
+# 2. Find all contractions. Separate out the pieces before and after the 
+# apostrophe.
+contractions <- "[A-Za-z]+'[A-Za-z]"
+sentences[str_detect(sentences, contractions)] %>%
+  str_extract(contractions)
+
+# Replacing Matches
+
+x <- c("apple", "pear", "banana")
+str_replace(x, "[aeiou]", "-")
+
+x <- c("1 house", "2 cars", "3 people")
+str_replace_all(x, c("1" = "one", "2" = "two", "3" = "three"))
+
+# Example of flipping the order of second and third words from textbook:
+sentences %>%
+  str_replace("([^ ]+) ([^ ]+) ([^ ]+)", "\\1 \\3 \\2") %>%
+  head(5)
+
+# Exercises 14.4.5.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-39
+
+# 1. Replace all forward slashes in a string with backslashes.
+r4ds_website <- "http://r4ds.had.co.nz/strings.html#grouped-matches"
+str_replace_all(r4ds_website, c("/" = "\\\\"))
+# I do not know how to get a single backslash.
+
+# 2. Implement a simple version of str_to_lower() using replace_all().
+name <- "DANIEL J VERA"
+str_to_lower(name)
+# not sure what the question is asking.
+
+# 3. Switch the first and last letters in words. Which of those strings 
+# are still words?
+
