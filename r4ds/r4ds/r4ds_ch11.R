@@ -579,7 +579,6 @@ sentences %>%
 # 1. Replace all forward slashes in a string with backslashes.
 r4ds_website <- "http://r4ds.had.co.nz/strings.html#grouped-matches"
 str_replace_all(r4ds_website, c("/" = "\\\\"))
-
 # I do not know how to get a single backslash.
 
 # 2. Implement a simple version of str_to_lower() using replace_all().
@@ -708,6 +707,7 @@ str_extract_all(sentences, boundary("word")) %>%
   count(sort = TRUE) %>%
   head(5)
 # Other Uses of Regular Expressions ========================================
+
 apropos("replace")
 head(dir(pattern = "\\.Rmd$"))
 
