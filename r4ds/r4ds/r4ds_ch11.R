@@ -1,4 +1,4 @@
-# R for Data Science Chapter 10
+# R for Data Science Chapter 11
 # Strings with stringr
 # Daniel J. Vera, Ph.D.
 library(tidyverse)
@@ -522,3 +522,206 @@ pattern2 <- "\\b[a-zA-Z]{3,}s\\b"
 # or "hostess".
 sentences_s <- str_subset(sentences, pattern2)
 str_extract_all(sentences_s, pattern2)
+
+# Grouped Matches
+
+# Imagine we want to extract nouns from sentences.
+# Heuristic: look for any word that comes after "a" or "the".
+noun <- "(a|the) ([^ ]+)"
+
+has_noun <- sentences %>%
+  str_subset(noun) %>%
+  head(10)
+has_noun %>%
+  str_extract(noun)
+
+has_noun %>%
+  str_match(noun)
+
+tibble(sentence = sentences) %>%
+  tidyr::extract(
+    sentence, c("article", "noun"), "(a|the) ([^ ]+)",
+    remove = FALSE
+  )
+
+# Exercises 14.4.4.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-38
+
+# 1. Find all words that come after a “number” like “one”, “two”, “three” 
+# etc. Pull out both the number and the word.
+after_number <- "(one|two|three|four|five|six|seven|eight|nine|ten) ([^ ]+)"
+
+sentences[str_detect(sentences, after_number)] %>%
+  str_extract(after_number)
+
+# 2. Find all contractions. Separate out the pieces before and after the 
+# apostrophe.
+contractions <- "[A-Za-z]+'[A-Za-z]"
+sentences[str_detect(sentences, contractions)] %>%
+  str_extract(contractions)
+
+# Replacing Matches
+
+x <- c("apple", "pear", "banana")
+str_replace(x, "[aeiou]", "-")
+
+x <- c("1 house", "2 cars", "3 people")
+str_replace_all(x, c("1" = "one", "2" = "two", "3" = "three"))
+
+# Example of flipping the order of second and third words from textbook:
+sentences %>%
+  str_replace("([^ ]+) ([^ ]+) ([^ ]+)", "\\1 \\3 \\2") %>%
+  head(5)
+
+# Exercises 14.4.5.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-39
+
+# 1. Replace all forward slashes in a string with backslashes.
+r4ds_website <- "http://r4ds.had.co.nz/strings.html#grouped-matches"
+str_replace_all(r4ds_website, c("/" = "\\\\"))
+
+# I do not know how to get a single backslash.
+
+# 2. Implement a simple version of str_to_lower() using replace_all().
+name <- "DanieL J VerA"
+str_to_lower(name)
+str_replace_all(name, c("D" = "d", "L" = "l", "V" = "v", "A" = "a"))
+
+# 3. Switch the first and last letters in words. Which of those strings 
+# are still words?
+words
+flipped <- words %>%
+  str_replace("^(.)(.*)(.)$", "\\3\\2\\1")
+
+words[words %in% flipped]
+
+# Splitting
+sentences %>%
+  head(5) %>%
+  str_split(" ")
+
+"a|b|c|d" %>%
+  str_split("\\|") %>%
+  .[[1]]
+
+sentences %>%
+  head(5) %>%
+  str_split(" ", simplify = TRUE)
+
+fields <- c("Name: Hadley", "Country: NZ", "Age: 35")
+fields %>% str_split(": ", n = 2, simplify = TRUE)
+
+x <- "This is a sentence. This is another sentence."
+str_view_all(x, boundary("word"))
+
+str_split(x, " ")[[1]]
+str_split(x, boundary("word"))[[1]]
+
+# Exercises 14.4.6.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-40
+
+# 1. Split up a string like "apples, pears, and bananas" into individual 
+# components.
+a_string <- "apples, pears, and bananas"
+str_split(a_string, boundary("word"))
+str_split(a_string, " ")
+
+# 2. Why is it better to split up by boundary("word") than " "?
+# In above exercise, when splitting with " ", we include commas, e.g.
+# "apples," but boundary("word") gives us the word.
+
+# 3. What does splitting with an empty string ("") do? 
+# Experiment, and then read the documentation.
+str_split(a_string, "")
+# gives us each character.
+# From documentation ?str_split " An empty pattern, "", is equivalent 
+# to boundary("character").
+str_split(a_string, boundary("character"))
+
+# Find Matches
+name
+str_locate(name, "a")
+names <- c("Daniel", "J", "Vera")
+str_locate_all(names, "a")
+
+str_sub(name, start = 1L, end = str_locate(name, "ni"))
+
+# Other Types of Pattern ===================================================
+# The regular call:
+str_view(fruit, "nana")
+# is shorthand for
+str_view(fruit, regex("nana"))
+
+bananas <- c("banana", "Banana", "BANANA")
+str_view(bananas, "banana")
+str_view(bananas, regex("banana", ignore_case = TRUE))
+
+x <- "Line 1\nLine 2\nLine3"
+str_extract_all(x, "^Line")[[1]]
+str_extract_all(x, regex("^Line", multiline = TRUE))[[1]]
+
+phone <- regex("
+  \\(?       # optional opening parens 
+  (\\d{3}) # area code 
+  [)- ]?     # optional closing parens, dash, or space 
+  (\\d{3}) # another three numbers 
+  [ -]?      # optional space or dash 
+  (\\d{3}) # three more numbers 
+  ", comments = TRUE) 
+str_match("514-791-8141", phone)
+
+microbenchmark::microbenchmark(
+  fixed = str_detect(sentences, fixed("the")), 
+  regex = str_detect(sentences, "the"), 
+  times = 20
+)                             
+
+a1 <- "\u00e1"
+a2 <- "a\u0301" 
+c( a1, a2)
+a1 == a2
+str_detect(a1, fixed(a2))
+str_detect(a1, coll(a2))
+
+i <- c(" I", "İ", "i", "ı")
+i
+str_subset(i, coll("i", ignore_case = TRUE))
+str_subset(i, coll("i", ignore_case = TRUE, locale = "tr"))
+
+stringi::stri_locale_info()
+
+# Exercises 14.5.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-41
+
+# 1. How would you find all strings containing \ with regex() vs. 
+# with fixed()?
+str_subset(c("a\\b", "ab"), "\\\\")
+str_subset(c("a\\b", "ab"), fixed("\\"))
+
+# 2. What are the five most common words in sentences?
+str_extract_all(sentences, boundary("word")) %>%
+  unlist() %>%
+  str_to_lower() %>%
+  tibble() %>%
+  set_names("word") %>%
+  group_by(word) %>%
+  count(sort = TRUE) %>%
+  head(5)
+# Other Uses of Regular Expressions ========================================
+apropos("replace")
+head(dir(pattern = "\\.Rmd$"))
+
+# stringi ==================================================================
+# Exercises 14.7.1 on website:
+# http://r4ds.had.co.nz/strings.html#exercises-42
+
+# 1. Find the stringi functions that:
+#     a. Count the number of words.
+# Use apropos after loading stringi. stri_count_words
+#     b. Find duplicated strings.
+# stri_duplicated
+#     c. Generate random text.
+# stri_rand_strings
+
+# 2. How do you control the language that stri_sort() uses for sorting?
+# use locale argument.
