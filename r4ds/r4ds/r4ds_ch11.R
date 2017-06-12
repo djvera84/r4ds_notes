@@ -239,7 +239,7 @@ str_view(stringr::words, "i(ng|ze)$", match = TRUE)
 
 
 # 2. Empirically verify the rule “i before e except after c”.
-str_view(stringr::words, "[^c]ei|cie", match = TRUE)
+str_view(stringr::words, "[^c]ie|cei", match = TRUE)
 
 # 3. Is “q” always followed by a “u”?
 str_view(stringr::words, "q[^u]", match = TRUE)
