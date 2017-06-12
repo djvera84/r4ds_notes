@@ -501,7 +501,7 @@ color_match_fix <- str_c(color_fix, collapse = "|")
 str_view_all(more, color_match_fix)
 
 # this works but keeps spaces around "red". It also misses the last "red" in
-# third sentence. jrnold's solution is betterusing the word boundary 
+# third sentence. jrnold's solution is better using the word boundary 
 # regex \b:
 color_fix2 <- str_c("\\b", str_c(colors, collapse = "|"), "\\b")
 str_view_all(more, color_fix2)
