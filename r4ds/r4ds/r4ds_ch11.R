@@ -293,7 +293,7 @@ str_view(x, 'C[LX]+?')
 # Any string with curly braces surronding at least one character.
 
 # c. \d{4}-\d{2}-\d{2}
-# Four digites, then dash, then 2 digits, then dash, then 2 digits. Could be
+# Four digits, then dash, then 2 digits, then dash, then 2 digits. Could be
 # a date in ISO 8601 format, year, month, day.
 
 # d. "\\\\{4}"
