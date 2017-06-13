@@ -63,12 +63,18 @@ gss_cat %>%
   group_by(relig) %>%
   count() %>%
   arrange(desc(n))
+
+gss_cat %>%
+  count(relig, sort = TRUE)
 # Protestant, followed by Catholic and None.
 
 gss_cat %>%
   group_by(partyid) %>%
   count() %>%
   arrange(desc(n))
+
+gss_cat %>%
+  count(partyid, sort = TRUE)
 
 # Independent followed by Not str democrat.
 
@@ -173,16 +179,22 @@ ggplot(relig, aes(tvhours, fct_reorder(relig, tvhours))) +
 # 2. For each factor in gss_cat identify whether the order of the levels 
 # is arbitrary or principled.
 levels(gss_cat$marital)
+summary(gss_cat$marital)
 # arbitrary
 levels(gss_cat$race)
+summary(gss_cat$race)
 # ordered by observation
 levels(gss_cat$rincome)
+summary(gss_cat$rincome)
 # principaled
 levels(gss_cat$partyid)
-# arbitrary
+summary(gss_cat$partyid)
+# principaled by politcal spectrum
 levels(gss_cat$relig)
+summary(gss_cat$relig)
 # arbitrary
 levels(gss_cat$denom)
+summary(gss_cat$denom)
 # arbitrary
 
 # 3. Why did moving “Not applicable” to the front of the levels move it 
