@@ -186,7 +186,8 @@ flights_dt %>%
     mon = as.factor(month(dep_time))
   ) %>%
   ggplot(aes(x = time, y = ..density.., group = mon, color = mon)) +
-    geom_freqpoly(binwidth = 100)
+    geom_freqpoly(binwidth = 100) 
+    # binwidth = 100, since 100 units on x axis corresponds to 1 hour
 
 # 2. Compare dep_time, sched_dep_time and dep_delay. Are they consistent? 
 # Explain your findings.
