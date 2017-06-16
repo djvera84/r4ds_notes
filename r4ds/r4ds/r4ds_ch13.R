@@ -388,6 +388,7 @@ next_year <- today() + years(1)
 # current year.
 ymd("2015-01-01") + months(0:11)
 ymd("2017-01-01") + months(0:11)
+floor_date(today(), unit = "year") + months(0:11)
 
 # 4. Write a function that given your birthday (as a date), returns how 
 # old you are in years.
