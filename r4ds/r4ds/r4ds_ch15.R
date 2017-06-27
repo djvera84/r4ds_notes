@@ -339,8 +339,8 @@ if (y < 20) {
 # and construct three examples that illustrate the key differences.
 
 # the ifelse(test, yes, no) control flow statement returns a value
-# with the same shape as test filled withe elements selected from
-# either yes or no depending on whether the lement of test is TRUE or FALSE
+# with the same shape as test filled with elements selected from
+# either yes or no depending on whether the element of test is TRUE or FALSE
 x <- c(6:-4)
 sqrt(x) # gives warning
 ifelse(x >= 0, sqrt(x), NA) # gives warning
