@@ -634,11 +634,11 @@ rule2("Important output")
 rule3 <- function(..., pad = "-") {
   title <- paste0(...)
   width <- getOption("width") - nchar(title) - 5
-  padchar <- nchar(pad)
+  padwidth <- nchar(pad)
   cat(title, " ",
-      stringr::str_dup(pad, width %/% padchar),
+      stringr::str_dup(pad, width %/% padwidth),
       # if not multiple, fill in the remaining characters
-      stringr::str_sub(pad, 1, width %% padchar),
+      stringr::str_sub(pad, 1, width %% padwidth),
       "\n", sep = "")
 }
 rule3("Important output", pad = "-+")
