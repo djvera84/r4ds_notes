@@ -739,7 +739,7 @@ f(10)
 
 # Some devious things (it should go without saying but overriding addition
 # is probably a bad idea, so I commented out the following but if you take
-# the comments away, obsever the weirdness!):
+# the comments away, observe the weirdness!):
 # `+` <- function(x, y) {
 #   if (runif( 1) < 0.1) { 
 #     sum(x, y)
