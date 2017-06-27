@@ -338,7 +338,7 @@ if (y < 20) {
 # 1. What’s the difference between if and ifelse()? Carefully read the help 
 # and construct three examples that illustrate the key differences.
 
-# the ifelse(test, yes, no) control flow statement returns returns a value
+# the ifelse(test, yes, no) control flow statement returns a value
 # with the same shape as test filled withe elements selected from
 # either yes or no depending on whether the lement of test is TRUE or FALSE
 x <- c(6:-4)
