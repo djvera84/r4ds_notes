@@ -31,7 +31,6 @@ length(x)
 # 2. Dates and date-times, built on top of numeric vectors
 # 3. Data frames and tibbles, built on top of lists.
 
-
 # Important Types of Atomic Vector ----------------------------------------
 
 # Logical, integer, double, and character are the four most important.
@@ -241,3 +240,186 @@ x[["hij"]]
 
 # Recursive Vectors (Lists) -----------------------------------------------
 
+x <- list(1, 2, 3)
+x
+str(x)
+x_named <- list(a = 1, b = 2, c = 3)
+x_named
+str(x_named)
+y <- list("a", 1L, 1.5, TRUE)
+str(y)
+z <- list(list(1, 2), list(3, 4))
+str(z)
+
+# Visualizing Lists
+x1 <- list(c(1, 2), c(3, 4))
+x2 <- list(list(1, 2), list(3, 4))
+x3 <- list(1, list(2, list(3)))
+
+# Subsetting
+a <- list(a = 1:3, b = "a string", c = pi, d = list(-1, -5))
+a
+str(a)
+
+# [ extracts a sublist. The results will always be a list.
+a[1:2]
+a[4]
+str(a[1:2])
+str(a[4])
+
+# [[ extracts a single component from the list. It removes a level of
+# hierarchy from the list:
+y
+str(y)
+y[[1]]
+y[[4]]
+str(y[[1]])
+str(y[[4]])
+
+# $ is a shorthand for extracting named elements of a list. It works
+# similar to [[ except that you don't need to use quotes:
+a$a
+a[["a"]]
+
+a[[4]]
+a[[4]][1]
+a[[4]][[1]]
+str(a[[4]])
+str(a[[4]][1])
+str(a[[4]][[1]])
+
+# Exercises 20.5.4 on website:
+# http://r4ds.had.co.nz/vectors.html#exercises-53 
+# 1. Draw the following lists as nested sets:
+#     a. list(a, b, list(c, d), list(e, f))
+#     b. list(list(list(list(list(list(a))))))
+
+# 2. What happens if you subset a tibble as if you’re subsetting a list?
+df <- tibble(a = 1:3, b = 4:6, c = 7:9)
+df
+str(df)
+
+df[1] # gives first column as n x 1 tibble (in this case n = 3)
+str(df[1])
+
+df[[2]] # gives the second column as a n dimensional vector (agian n = 3)
+str(df[[2]])
+df[[3]][1] # gives the entry on row 1, column 3 as 1-dim vector
+str(df[[3]][1])
+
+df[[3]][[1]] #same as above
+str(df[[3]][1])
+
+df$a # gives first column 'a' as n-dim vector.
+df[["a"]]
+df["a"]
+# What are the key differences between a list and a tibble?
+df2 <- tibble(a = 1:3, b = 4:6, c = c('a', 'b', 'c'))
+df2
+# tibbles can contain a mix of types but they are not 'recursive',
+# i.e. all entries are 'scalar' types. You can't have a tibble
+# with a tibble as an entry. From jrnold's solutions:
+
+# Subsetting a tibble works the same way as a list; a data frame can be
+# thought of as a list of columns. The key different between a list and 
+# a tibble is that a tibble (data frame) has the restriction that all its 
+# elements (columns) must have the same length.
+
+# Attributes --------------------------------------------------------------
+
+x <- 1:10
+attr(x, "gretting")
+
+attr(x, "gretting") <- "Hi!"
+attr(x, "farewell") <- "Bye!"
+attributes(x)
+str(attributes(x))
+
+# There are three very important attributes that are used to implement
+# fundamental parts of R: 
+#  Names are used to name the elements of a vector.
+#  Dimensions (dims, for short) make a vector behave like a matrix or array.
+#  Class is used to implement the S3 object-oriented system.
+
+as.Date
+methods("as.Date")
+
+getS3method("as.Date", "default")
+getS3method("as.Date", "numeric")
+
+# Augmented Vectors -------------------------------------------------------
+
+# Factors
+# Factors are built on top of integers and have a levels attribute:
+x <- factor(c("ab", "cd", "ab", levels = c("ab", "cd", "ef")))
+typeof(x)
+attributes(x)
+str(x)
+
+# Dates and Date-Times
+# Dates are numeric vectors that represent the number of days since
+# 1 January 1970
+x <- as.Date("1971-01-01")
+unclass(x)
+
+typeof(x)
+attributes(x)
+
+x <- lubridate::ymd_hm("1970-01-01 01:00")
+unclass(x)
+typeof(x)
+attributes(x)
+
+attr(x, "tzone") <- "US/Pacific"
+x
+attr(x, "tzone") <- "US/Eastern"
+x
+
+y <- as.POSIXlt(x)
+typeof(y)
+attributes(y)
+
+# Tibbles
+# Tibbles are augmented lists with three classes: tbl_df, tbl, data.frame
+# Two attributes: column names and row names (names, row.names)
+tb <- tibble::tibble(x = 1:5, y = 5:1)
+typeof(tb)
+attributes(tb)
+
+df <- data.frame(x = 1:5, y = 5:1)
+typeof(df)
+attributes(df)
+
+# The main difference is the class. The class of tibble includes
+# “data.frame,” which means tibbles inherit the regular data frame behavior 
+# by default.
+
+# The difference between a tibble or a data frame and a list is that all of
+# the elements of a tibble or data frame must be vectors with the same 
+# length. All functions that work with tibbles enforce this constraint.
+
+# Exercises 20.7.4 on website:
+# http://r4ds.had.co.nz/vectors.html#exercises-54 
+# 1. What does hms::hms(3600) return? How does it print? What primitive type
+# is the augmented vector built on top of? What attributes does it use?
+hms::hms(3600)
+# returns>01:00:00.
+typeof(hms::hms(3600))
+class(hms::hms(3600))
+# primative is double
+attributes(hms::hms(3600))
+# units are seconds, classes are hms and difftime
+
+# 2. Try and make a tibble that has columns with different lengths. 
+# What happens?
+tb <- tibble(x = 1:3, y = 1:2)
+# you get an error, variables must be length 1 or 3 (max column dim).
+# it also identifies the problem variable, y in this case.
+# Note if we do make it 1:
+tb <- tibble(x = 1:3, y = 1)
+tb
+# the y just repeats.
+# 3. Based on the definition above, is it ok to have a list as a column of a
+# tibble?
+tibble(x = 1:3, y = list("a", 1, list(1:3))) # yes
+# as long as dimensions of the vectors are the same, i.e. same length!
