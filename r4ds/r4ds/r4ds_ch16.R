@@ -312,7 +312,7 @@ str(df[[3]][1])
 
 df$a # gives first column 'a' as n-dim vector.
 df[["a"]]
-df["a"]
+df["a"] # this gives a sub-tibble
 # What are the key differences between a list and a tibble?
 df2 <- tibble(a = 1:3, b = 4:6, c = c('a', 'b', 'c'))
 df2
