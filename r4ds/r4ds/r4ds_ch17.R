@@ -567,7 +567,6 @@ col_summary_numeric(df, mean)
 # map_int() makes an integer vector
 # map_dbl() makes a double vector
 # map_chr() makes a character vector
-
 # Makes life easier.
 map_dbl(df, mean)
 map_dbl(df, median)
@@ -620,7 +619,7 @@ x1 %>% sapply(threshold) %>% str()
 x2 %>% sapply(threshold) %>% str()
 
 # Exercises 21.5.3 on website:
-# http://r4ds.had.co.nz/iteration.html#exercises-57
+# http://r4ds.had.co.nz/iteration.html#exercises-58
 # 1. Write code that uses one of the map functions to:
 #   a. Compute the mean of every column in mtcars.
 #   b. Determine the type of each column in nycflights13::flights.
@@ -647,6 +646,7 @@ map_lgl(mtcars, is.factor)
 # 3. What happens when you use the map functions on vectors that aren’t 
 # lists? What does map(1:5, runif) do? Why?
 map(1:5, runif)
+# still returns a list of length equal to the input vector
 # applies runif to each element of vector 1:5
 
 # 4. What does map(-2:2, rnorm, n = 5) do? Why? 
@@ -655,8 +655,247 @@ map(-2:2, rnorm, n = 5) # makes samples n = 5 with means -2, 1, 0, 1, 2
 # and returns a list wtih each element a numeric vector of length 5
 
 map_dbl(-2:2, rnorm, n = 5)
-# throws an error, expects a numeric vector of length one.
+# throws an error, expects a numeric vector of length one in each
+# component, lists can have 'high dimensional' components.
 
 # 5. Rewrite map(x, function(df) lm(mpg ~ wt, data = df)) to eliminate 
 # the anonymous function.
 map(list(mtcars), ~ lm(mpg ~ wt, data = .))
+
+# Dealing with Failure ----------------------------------------------------
+
+safe_log <- safely(log)
+str(safe_log(10))
+str(safe_log("a"))
+
+# safely works with map
+x <- list(1, 10, "a")
+y <- x %>% map(safely(log))
+str(y)
+
+# Making two lists
+y <- y %>% transpose()
+str(y)
+
+is_ok <- y$error %>% map_lgl(is_null)
+x[!is_ok]
+y$result[is_ok] %>% flatten_dbl()
+
+# possibly() is another option:
+x <- list(1, 10, "a")
+x %>% map_dbl(possibly(log, NA_real_))
+
+# quietly() also:
+x <- list(1, -1)
+x %>% map(quietly(log)) %>% str()
+
+# Mapping Over Multiple Arguments -----------------------------------------
+
+# map2() and pmap()
+
+mu <- list(5, 10, -3)
+mu %>%
+  map(rnorm, n = 5) %>%
+  str()
+
+# what if we also want sd varying?
+# First Method:
+sigma <- list(1, 5, 10)
+seq_along(mu) %>% 
+  map(~rnorm(5, mu[[.]], sigma[[.]])) %>%
+  str()
+# above intent is obfuscated so
+# Better Method:
+map2(mu, sigma, rnorm, n = 5) %>% str()
+
+# Note that the arguments that vary for each call come before the function;
+# arguments that are the same for every call come after.
+
+# map2 is just a wrapper around a for loop:
+map2 <- function(x, y, f, ...) {
+  out <- vector("list", length(x))
+  for (i in seq_along(x)) {
+    out[[i]] <- f(x[[i]], y[[i]], ...)
+  }
+  out
+}
+
+# Instead of map3(), map4(), map5() etc, purr provides pmap()
+
+# Suppose want to vary the mean and sd as above but also the number of
+# samples n:
+n <- list(1, 2, 5)
+args1 <- list(n, mu, sigma)
+args1 %>%
+  pmap(rnorm) %>%
+  str()
+
+# its better to name the arguments in case the positional matching is off
+args2 <- list(mean = mu, sd = sigma, n = n)
+args2 %>%
+  pmap(rnorm) %>%
+  str()
+
+# arguments in this case area all same length so we can store in 
+# data frame:
+params <- tribble(
+  ~ mean, ~sd, ~n,
+     5,     1,  1,
+     10,    5,  3,
+     -3,   10,  5
+  )
+
+params %>%
+  pmap(rnorm)
+
+# Invoking Different Functions
+
+f <- c("runif", "rnorm", "rpois")
+param <- list(
+  list(min = -1, max = 1),
+  list(sd = 5),
+  list(lambda = 10)
+)
+
+invoke_map(f, param, n = 5) %>% str()
+
+# can use tribble again to make matching pairs a little more easy:
+sim <- tribble( 
+  ~ f,     ~ params, 
+  "runif", list(min = -1, max = 1), 
+  "rnorm", list(sd = 5), 
+  "rpois", list(lambda = 10)
+  )
+sim %>% mutate(sim = invoke_map(f, params, n = 10))
+
+# Walk --------------------------------------------------------------------
+
+# Use walk when you want side effects rather than return value of function
+# E.g. render files to screen or save files to disk.
+
+x <- list(1, "a", 3)
+
+x %>%
+  walk(print)
+
+# Also have walk2() and pwalk()
+library(ggplot2)
+plots <- mtcars %>%
+  split(.$cyl) %>%
+  map(~ggplot(., aes(mpg, wt)) + geom_point())
+paths <- stringr::str_c(names(plots), ".pdf")
+
+pwalk(list(paths, plots), ggsave, path = tempdir())
+
+# Other Patterns of For Loops ---------------------------------------------
+# Predicate Functions
+iris %>%
+  keep(is.factor) %>%
+  str()
+
+iris %>%
+  discard(is.factor) %>%
+  str()
+
+x <- list(1:5, letters, list(10))
+x %>%
+  some(is_character)
+x %>%
+  every(is_vector)
+
+x <- sample(10)
+x
+
+x %>% 
+  detect(~ . > 5)
+x %>%
+  detect_index(~ . > 5)
+
+x %>%
+  head_while(~ . > 5)
+x %>%
+  tail_while(~ . > 5)
+
+# Reduce and Accumulate
+dfs <- list(
+  age = tibble(name = "John", age = 30),
+  sex = tibble(name = c("John", "Mary"), sex = c("M", "F")),
+  trt = tibble( name = "Mary", treatment = "A")
+)
+dfs
+
+dfs %>% reduce(full_join)
+
+vs <- list(
+  c(1, 3, 5, 6, 10),
+  c(1, 2, 3, 7, 8, 10),
+  c(1, 2, 3, 4, 8, 9, 10)
+)
+
+vs %>% reduce(intersect)
+
+x <- sample(10)
+x
+x %>% accumulate(`+`)
+
+# Exercises 21.9.3 on website:
+# http://r4ds.had.co.nz/iteration.html#exercises-59
+# 1. Implement your own version of every() using a for loop. Compare it with 
+# purrr::every(). What does purrr’s version do that your version doesn’t?
+my_every <- function(.x, .f, ...) {
+  for (i in .x) {
+    if (!.f(i, ...)) {
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+
+purrr::every
+
+my_every(1:3, function(x) {x > 1})
+my_every(1:3, function(x) {x > 0})
+
+# From jrnold's solutions:
+# The function purrr::every does fancy things with .p, like taking a logical
+# vector instead of a function, or being able to test part of a string if 
+# the elements of .x are lists.
+
+# 2. Create an enhanced col_sum() that applies a summary function to every 
+# numeric column in a data frame.
+
+enhanced_col_summary <- function(df, fun, ...) {
+  map(keep(df, is.numeric), fun, ...)
+}
+
+enhanced_col_summary(iris, mean)
+enhanced_col_summary(mtcars, mean)
+
+# 3. A possible base R equivalent of col_sum() is:
+  
+col_sum3 <- function(df, f) {
+  is_num <- sapply(df, is.numeric)
+  df_num <- df[, is_num]
+  sapply(df_num, f)
+  }
+# But it has a number of bugs as illustrated with the following inputs:
+  
+df <- tibble(
+  x = 1:3, 
+  y = 3:1,
+  z = c("a", "b", "c")
+  )
+# OK
+col_sum3(df, mean)
+# Has problems: don't always return numeric vector
+col_sum3(df[1:2], mean)
+col_sum3(df[1], mean)
+col_sum3(df[0], mean)
+# What causes the bugs?
+
+# sapply doesn't always return numeric vectors. From the documentation:
+# sapply returns "if X has length zero or n = 0, an empty list."
+
+sapply(df[0], is.numeric)
+sapply(df[1], is.numeric)
+sapply(df[1:2], is.numeric)
