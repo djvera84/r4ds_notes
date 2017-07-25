@@ -4,6 +4,7 @@
 library(tidyverse)
 library(modelr)
 options(na.action = na.warn)
+library(splines)
 
 # A Simple Model ----------------------------------------------------------
 
@@ -331,4 +332,209 @@ grid %>% gather_predictions(m1, m2)
 
 # Formulas and Model Families ---------------------------------------------
 
+df <- tribble(
+  ~y, ~x1, ~x2,
+  4, 2, 5,
+  5, 1, 6
+)
 
+model_matrix(df, y ~ x1)
+model_matrix(df, y ~ x1 - 1)
+model_matrix(df, y ~ x1 + x2)
+
+# Categorical Variables
+df <- tribble(
+  ~ sex, ~ response,
+  "male", 1,
+  "female", 2,
+  "male", 1
+)
+
+model_matrix(df, response ~ sex)
+
+ggplot(sim2) +
+  geom_point(aes(x, y))
+
+mod2 <-  lm(y ~ x, data = sim2)
+
+grid <- sim2 %>%
+  data_grid(x) %>%
+  add_predictions(mod2)
+grid
+
+ggplot(sim2, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_point(
+    data = grid,
+    aes(y = pred),
+    color = "red",
+    size = 4
+  )
+
+# Interactions (Continuous and Categorical)
+ggplot(sim3, aes(x1, y)) +
+  geom_point(aes(color = x2))
+
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y~ x1 * x2, data = sim3)
+
+grid <- sim3 %>%
+  data_grid(x1, x2) %>% # finds all unique values of x1 and x2 and generates
+  # all combinations
+  gather_predictions(mod1, mod2)
+grid
+
+ggplot(sim3, aes(x1, y, color = x2)) +
+  geom_point() +
+  geom_line(data = grid, aes(y = pred)) +
+  facet_wrap(~ model)
+
+sim3 <- sim3 %>%
+  gather_residuals(mod1, mod2)
+
+ggplot(sim3, aes(x1, resid, color = x2)) +
+  geom_point() +
+  facet_grid(model ~ x2)
+
+# Interactions (Two Continuous)
+mod1 <- lm(y ~ x1 + x2, data = sim4)
+mod2 <- lm(y ~ x1 * x2, data = sim4)
+
+grid <- sim4 %>%
+  data_grid(
+    x1 = seq_range(x1, 5),
+    x2 = seq_range(x2, 5)
+  ) %>%
+  gather_predictions(mod1, mod2)
+grid
+
+# Brief digression on seq_range()
+# pretty:
+seq_range(c(0.0123, 0.923423), n = 5)
+seq_range(c(0.0123, 0.923423), n = 5, pretty = TRUE)
+# trim:
+x1 <- rcauchy(100)
+seq_range(x1, n = 5)
+seq_range(x1, n = 5, trim = 0.10)
+seq_range(x1, n = 5, trim = 0.25)
+seq_range(x1, n = 5, trim = 0.50)
+# expand:
+x2 <- c(0, 1)
+seq_range(x2, n = 5)
+seq_range(x2, n = 5, expand = 0.10)
+seq_range(x2, n = 5, expand = 0.25)
+seq_range(x2, n = 5, expand = 0.50)
+# Back to model:
+
+ggplot(grid, aes(x1, x2)) +
+  geom_tile(aes(fill = pred)) +
+  facet_wrap(~ model)
+
+ggplot(grid, aes(x1, pred, color = x2, group = x2)) +
+  geom_line() + 
+  facet_wrap(~ model) 
+
+ggplot(grid, aes(x2, pred, color = x1, group = x1)) +
+  geom_line() +
+  facet_wrap(~ model)
+
+# Transformations
+df <- tribble(
+  ~y, ~x,
+   1,  1,
+   2,  2,
+   3,  3
+)
+
+model_matrix(df, y ~ x^2 + x)
+model_matrix(df, y ~ I(x^2) + x)
+
+model_matrix(df, y ~ poly(x, 2))
+# Outside range  of data, polynomials rapidly shoot off to positive or
+# negative infinity. Alternative is to use natural spline from splines
+# library:
+model_matrix(df, y ~ ns(x, 2))
+
+sim5 <- tibble(
+  x = seq(0, 3.5 * pi, length = 50),
+  y = 4 * sin(x) + rnorm(length(x))
+)
+sim5
+ggplot(sim5, aes(x, y)) +
+  geom_point()
+
+mod1 <- lm(y ~ ns(x, 1), data = sim5)
+mod2 <- lm(y ~ ns(x, 2), data = sim5)
+mod3 <- lm(y ~ ns(x, 3), data = sim5)
+mod4 <- lm(y ~ ns(x, 4), data = sim5)
+mod5 <- lm(y ~ ns(x, 5), data = sim5)
+
+grid <- sim5 %>%
+  data_grid(x = seq_range(x, n = 50, expand = 0.1)) %>%
+  gather_predictions(mod1, mod2, mod3, mod4, mod5, .pred = "y")
+
+ggplot(sim5, aes(x, y)) +
+  geom_point() +
+  geom_line(data = grid, color = "red") +
+  facet_wrap(~ model)
+
+# Exercises 23.4.5 on website:
+# http://r4ds.had.co.nz/model-basics.html#exercises-62
+# 1. What happens if you repeat the analysis of sim2 using a model without
+# an intercept? What happens to the model equation? What happens to the 
+# predictions?
+
+# First lets look at original
+mod2 <-  lm(y ~ x, data = sim2)
+
+grid <- sim2 %>%
+  data_grid(x) %>%
+  add_predictions(mod2)
+grid
+
+ggplot(sim2, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_point(
+    data = grid,
+    aes(y = pred),
+    color = "red",
+    size = 4
+  )
+  
+# Now we drop the intercept
+mod2_no_intcpt <-  lm(y ~ x - 1, data = sim2)
+
+coef(mod2)
+coef(mod2_no_intcpt)
+summary(mod2)
+summary(mod2_no_intcpt)
+mod2
+mod2_no_intcpt
+
+grid_no_intcpt <- sim2 %>%
+  data_grid(x) %>%
+  add_predictions(mod2_no_intcpt)
+grid_no_intcpt
+
+# The predictions are the same. In the 'categorical' case, by setting
+# the intercept to 0, effectively we just 're-scale' the coefficients
+# in the model. For example if x is 'd' then the model puts a 1 for x
+# at x == d and 0 otherwise. So we multiply 1 by 0.7588142 and add 1.15
+# in the regular model. This is the same as simply multiplying 1 by
+# the sum (0.7588142 + 1.15 = 1.91), what we multiply by if the intercept
+# is zero. With categorical data, its basically a contrast coding.
+
+# 2. Use model_matrix() to explore the equations generated for the models
+# I fit to sim3 and sim4. Why is * a good shorthand for interaction?
+
+
+# 3. Using the basic principles, convert the formulas in the following 
+# two models into functions. (Hint: start by converting the categorical 
+# variable into 0-1 variables.)
+
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+
+# 4. For sim4, which of mod1 and mod2 is better? I think mod2 does a 
+# slightly better job at removing patterns, but it’s pretty subtle. 
+# Can you come up with a plot to support my claim?
