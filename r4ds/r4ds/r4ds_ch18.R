@@ -376,7 +376,7 @@ ggplot(sim3, aes(x1, y)) +
   geom_point(aes(color = x2))
 
 mod1 <- lm(y ~ x1 + x2, data = sim3)
-mod2 <- lm(y~ x1 * x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
 
 grid <- sim3 %>%
   data_grid(x1, x2) %>% # finds all unique values of x1 and x2 and generates
@@ -526,6 +526,24 @@ grid_no_intcpt
 
 # 2. Use model_matrix() to explore the equations generated for the models
 # I fit to sim3 and sim4. Why is * a good shorthand for interaction?
+ggplot(sim3, aes(x1, y)) +
+  geom_point(aes(color = x2))
+ggplot(sim4, aes(x2, y)) +
+  geom_point()
+
+# sim3
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+mod1_4 <- lm(y ~ x1 + x2, data = sim4)
+mod2_4 <- lm(y ~ x1 * x2, data = sim4)
+model_matrix(sim3, y ~ x1 + x2)
+model_matrix(sim3, y ~ x1 * x2)
+model_matrix(sim4, y ~ x1 + x2)
+model_matrix(sim4, y ~ x1 * x2)
+
+# the syntax x1 * x2 simultaneously includes x1, x2, and x1*x2 as predictors
+# it is shorthand for x1 + x2 + x1:x2
+model_matrix(sim4, y ~ x1 : x2)
 
 
 # 3. Using the basic principles, convert the formulas in the following 
@@ -538,3 +556,18 @@ mod2 <- lm(y ~ x1 * x2, data = sim3)
 # 4. For sim4, which of mod1 and mod2 is better? I think mod2 does a 
 # slightly better job at removing patterns, but it’s pretty subtle. 
 # Can you come up with a plot to support my claim?
+
+# Missing Values ----------------------------------------------------------
+df <- tribble(
+  ~x, ~y,
+  1, 2.2,
+  2, NA,
+  3, 3.5,
+  4, 8.3,
+  NA, 10
+)
+
+mod <- lm(y ~ x, data = df) 
+# default set above wtih options(na.action = na.warn)
+mod <- lm(y ~ x, data = df, na.action = na.exclude)
+nobs(mod)
