@@ -1,0 +1,48 @@
+---
+title: "r4ds_ch23 / Diamonds Distribution Dashboard"
+author: "Daniel J. Vera, Ph.D."
+date: "September 13, 2017"
+output: 
+  flexdashboard::flex_dashboard: default
+  github_document: default
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+```
+
+## Column 1
+
+### Carat
+```{r}
+ggplot(diamonds, aes(carat)) + geom_histogram(binwidth = 0.1)
+```
+
+### Cut
+```{r}
+ggplot(diamonds, aes(cut)) + geom_bar()
+```
+
+### Color
+```{r}
+ggplot(diamonds, aes(color)) + geom_bar()
+```
+
+## Column 2
+### The largest diamonds
+```{r}
+diamonds %>%
+  arrange(desc(carat)) %>%
+  head(100) %>%
+  select(carat, cut, color, price) %>%
+  DT::datatable()
+```
+
+```{r}
+library( leaflet)
+leaflet() %>% 
+  setView(174.764,-36.877, zoom = 16) %>% 
+  addTiles() %>% addMarkers(174.764, -36.877, popup = "Maungawhau")
+```
